@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>John Expense Capture</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 20px;
+  background: #f4f4f4;
+}
+h2 { text-align: center; }
+input, select, button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 16px;
+}
+button {
+  background: black;
+  color: white;
+  border: none;
+}
+.entry {
+  background: white;
+  padding: 10px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Expense Capture</h2>
+
+<input type="date" id="date">
+
+<input type="text" id="payee" placeholder="Payee">
+
+<input type="text" id="description" placeholder="Description">
+
+<select id="account">
+  <option>C-Checking</option>
+  <option>F-Checking</option>
+  <option>Green Cash</option>
+  <option>KCC</option>
+  <option>United Mastercard</option>
+  <option>Visa Fidelity</option>
+</select>
+
+<input type="number" id="amount" placeholder="Amount">
+
+<select id="category">
+  <option>Auto Maintenance</option>
+  <option>Birthdays</option>
+  <option>Carol</option>
+  <option>Charity</option>
+  <option>Christmas</option>
+  <option>Church</option>
+  <option>Clothing</option>
+  <option>Club</option>
+  <option>Gifts</option>
+  <option>Groceries</option>
+  <option>Home Maintenance</option>
+  <option>Insurance</option>
+  <option>John</option>
+  <option>Maid</option>
+  <option>Medical</option>
+  <option>Projects</option>
+  <option>Savings</option>
+  <option>Social Security</option>
+  <option>Split</option>
+  <option>Taxes</option>
+  <option>Utilities</option>
+  <option>Vacation</option>
+  <option>Weight Training</option>
+  <option>Yard</option>
+</select>
+
+<button onclick="saveExpense()">Save</button>
+<button onclick="exportCSV()">Export CSV</button>
+<button onclick="clearData()">Clean Data</button>
+
+<h3>Recent Entries</h3>
+<div id="entries"></div>
+
+<script>
+
+// Format date to MM/DD/YY
+function formatDate(dateString) {
+  let d = new Date(dateString);
+  let mm = String(d.getMonth() + 1).padStart(2, '0');
+  let dd = String(d.getDate()).padStart(2, '0');
+  let yy = String(d.getFullYear()).slice(-2);
+  return mm + "/" + dd + "/" + yy;
+}
+
+document.getElementById("date").valueAsDate = new Date();
+
+function saveExpense() {
+  let rawDate = document.getElementById("date").value;
+  let date = formatDate(rawDate);
+  let payee = document.getElementById("payee").value;
+  let description = document.getElementById("description").value;
+  let account = document.getElementById("account").value;
+  let amountInput = document.getElementById("amount").value;
+  let category = document.getElementById("category").value;
+
+  if (!rawDate || !payee || !amountInput) {
+    alert("Date, Payee, and Amount are required.");
+    return;
+  }
+
+  let amount = parseFloat(amountInput);
+  if (!amountInput.startsWith("+")) {
+    amount = -Math.abs(amount);
+  }
+
+  let expense = { date, payee, description, account, amount, category };
+
+  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+  expenses.unshift(expense);
+  localStorage.setItem("expenses", JSON.stringify(expenses));
+
+  document.getElementById("payee").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("amount").value = "";
+
+  displayEntries();
+}
+
+function displayEntries() {
+  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+  let display = document.getElementById("entries");
+  display.innerHTML = "";
+
+  expenses.slice(0,10).forEach(e => {
+    display.innerHTML += `
+      <div class="entry">
+        ${e.date} | ${e.payee} | ${e.amount} | ${e.category}
+      </div>`;
+  });
+}
+
+function exportCSV() {
+  let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+  let csv = '"Date","Payee","Description","Account","Amount","Category","Sub","Mini","Check Number"\n';
+
+  expenses.forEach(e => {
+    csv += `"${e.date}","${e.payee}","${e.description}","${e.account}","${e.amount}","${e.category}","","",""\n`;
+  });
+
+  let blob = new Blob([csv], { type: 'text/csv' });
+  let url = URL.createObjectURL(blob);
+
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = "john_expenses.csv";
+  a.click();
+}
+
+
+function clearData() {
+  if (confirm("Are you sure you want to delete all stored entries?")) {
+    localStorage.removeItem("expenses");
+    displayEntries();
+    alert("Stored data cleared.");
+  }
+}
+
+displayEntries();
+</script>
+
+</body>
+</html>
