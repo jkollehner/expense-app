@@ -1,4 +1,12 @@
 <!DOCTYPE html>
+<!--
+
+Expense Capture App
+Version: 1.4
+Date: February 14, 2026
+Change: Added mobile web app capability for iPhone Home Screen install
+-->
+
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -89,14 +97,21 @@ button {
 
 // Format date to MM/DD/YY
 function formatDate(dateString) {
-  let d = new Date(dateString);
-  let mm = String(d.getMonth() + 1).padStart(2, '0');
-  let dd = String(d.getDate()).padStart(2, '0');
-  let yy = String(d.getFullYear()).slice(-2);
-  return mm + "/" + dd + "/" + yy;
+  let parts = dateString.split("-");
+  let year = parts[0];
+  let month = parts[1];
+  let day = parts[2];
+
+  return month + "/" + day + "/" + year.slice(-2);
 }
 
-document.getElementById("date").valueAsDate = new Date();
+document.addEventListener("DOMContentLoaded", function () {
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "America/Chicago"
+  });
+
+  document.getElementById("date").value = today;
+});
 
 function saveExpense() {
   let rawDate = document.getElementById("date").value;
